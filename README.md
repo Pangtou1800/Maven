@@ -207,6 +207,8 @@
       ·mvn test-compile：编译测试程序
       ·mvn test：执行测试
       ·mvn package：打包
+      ·mvn install：安装
+      ·mvn site：生成站点
 
 ## 第七节 关于联网的问题
 
@@ -323,8 +325,147 @@
           <version>0.0.1-SNAPSHOT</version>
       </dependency>
 
-## 第十一二节 依赖
+## 第十二节 依赖
 
-    11.1 Maven解析依赖信息时会到本地仓库中查找被依赖的jar包
+    12.1 Maven解析依赖信息时会到本地仓库中查找被依赖的jar包
 
-    11.2 对于自己开发的工程，使用mvn install安装，存入本地仓库
+      ※ 对于自己开发的工程，使用mvn install安装，存入本地仓库
+
+    12.2 依赖的范围
+
+        <scope>compile<scope>
+
+        有三个常用参数：
+        
+                  对主程序是否有效  对测试程序是否有效  是否参与打包
+        compile     有效            有效                参与        ex. spring-core
+        test        无效            有效               不参与       ex. junit
+        provided    有效            有效               不参与       ex. servlet-api
+                                                  （运行时由其它组件
+                                                   比如WebServer提供）
+
+## 第十三节 生命周期
+
+    13.1 含义
+
+        Maven的生命周期就是指各个构建环节的执行顺序
+
+        Maven的核心程序中定义了抽象的生命周期，各个生命周期的具体工作由插件来执行
+
+    13.2 三套相互独立的生命周期
+
+        ·Clean Lifecycle
+
+          - 在进行真正的构建之前进行一些清理工作
+
+        ·Default Lifecycle
+
+          - 构建的核心部分：编译、测试、打包、安装、部署等
+
+        ·Site Lifecycle
+
+          - 生成项目报告、站点、发布站点
+
+        每套生命周期都由一组阶段（Phase）组成
+
+    13.3 Clean生命周期 - mvn clean
+        · pre-clean
+        · clean
+        · post-clean
+
+    13.4 Default生命周期
+        · validate
+        · generate-sources
+        · process-sources
+        · generate-resources
+        · process-resources
+        · compile
+        · process-classes
+        · generate-test-sources
+        · process-test-sources
+        · generate-test-resources
+        · process-test-resources
+        · test-compile
+        · process-test-classes
+        · test
+        · prepapre-package
+        · package
+        · pre-integration-test
+        · integration-test
+        · post-integration-test
+        · verify
+        · install
+        · deploy
+
+    13.5 Site生命周期 - mvn site
+        · pre-site
+        · site
+        · post-site
+        · site-deploy
+
+    13.6 特点
+
+        Maven核心程序为了更好地实现自动化构建，有以下特点：
+        
+          不论执行生命周期的哪一个阶段，都是从这个生命周期最初的阶段开始执行到指定阶段
+
+    13.7 插件和目标
+
+        ·生命周期的各个阶段仅仅定义了要执行的任务是什么
+        ·各个阶段和插件的目标是对应的
+        ·相似的目标有特定的插件来完成
+
+| 生命周期阶段   | 插件目标     | 插件                  |
+|--------------|-------------|-----------------------|
+| compile      | compile     | mave-compiler-plugin  |
+| test-compile | testCompile | maven-compiler-pulgin |
+
+        ·可以将目标看做调用插件的“命令”
+
+## 第十四节 在Eclipse中使用Maven插件
+
+    14.1 Eclipse通常已经内置了插件
+
+    14.2 基本操作
+        ·创建Maven的Java工程
+        ·创建Maven的JavaWeb工程
+        ·执行Maven命令
+
+## 第十五节 第三个Maven工程
+
+    15.1 设置通过Maven创建的工程的JDK版本
+
+        > settings.xml
+
+          <profiles>
+            <profile>
+              <id>jdk-1.8</id>
+              <activation>
+                <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
+              </activation>
+              <properties>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+                <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
+              </properties>
+            </profile>
+          </profiles>
+
+    15.2 在Eclipse中创建Maven Project
+        ※勾选create a single project生成经典目录结构
+
+        - packing处下拉选择jar则为Java Project
+
+        - packing处下拉选择war则目标为JavaWeb Project
+           ·対生成的工程右键properties
+           ·Project Facets
+           ·Dynamic Web Module取消勾选，Apply
+           ·Dynamic Web Module勾选，打开提示的Further configuration available
+           ·Content directory
+                WebContent -> src/main/webapp
+           ·勾选Generate web.xml deployment descriptor
+           ·OK => Apply
+
+    
+

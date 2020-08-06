@@ -2,7 +2,7 @@
 
 ## 第一节 为什么使用Maven
 
-### 1. 目前掌握的技术
+    1.1 目前掌握的技术
 
         浏览器
           ↓
@@ -18,7 +18,7 @@
           ↓
         数据库                 ----> MySQL/Oracle
 
-### 2. 目前的技术在开发中的问题
+    1.2 目前的技术在开发中的问题
 
     ·一个项目就是一个工程
         > 如果一个项目非常庞大，就不适合继续使用package来划分模块了
@@ -52,7 +52,7 @@
 
 ## 第二节 Maven是什么
 
-### 1. Maven是一款服务于Java平台的自动化构建工具
+    2.1 Maven是一款服务于Java平台的自动化构建工具
 
     > Java平台 ※Maven本身也是用Java写的
 
@@ -64,7 +64,7 @@
 
         ※ Maven来源于美国俚语，意为内行、专家
 
-### 2. 构建
+    2.2 构建
 
     > 概念：
 
@@ -90,7 +90,7 @@
         Tips:平时Eclipse里面工程的JRE System Library，Apache Tomcat是工程的运行时环境
             只是一组jar包的引用，并没有把jar包真的拷贝到工程中
 
-### 3. 构建过程中的各个环节
+    2.3 构建过程中的各个环节
 
     1. 清理：
 
@@ -120,15 +120,15 @@
 
       将动态Web工程生成的war包复制到Servlet容器的指定目录下，使其可以运行
 
-### 4. 自动化构建
+    2.4 自动化构建
 
 ## 第三节 安装Maven核心程序
 
-    1. 检查JAVA_HOME环境变量
+    1> 检查JAVA_HOME环境变量
 
-    2. 解压Maven核心程序的压缩包，放在一个非中文无空格目录下
+    2> 解压Maven核心程序的压缩包，放在一个非中文无空格目录下
 
-    3. 配置Maven的环境变量
+    3> 配置Maven的环境变量
 
         > MAVEN_HOME或M2_HOME
 
@@ -138,7 +138,7 @@
 
           - bin目录
 
-    4. 验证
+    4> 验证
 
         mvn -v 查看Maven的版本
 
@@ -202,6 +202,7 @@
           ...
 
     6.2 常用命令
+
       ·mvn clean：清理
       ·mvn compile：编译主程序
       ·mvn test-compile：编译测试程序
@@ -209,6 +210,8 @@
       ·mvn package：打包
       ·mvn install：安装
       ·mvn site：生成站点
+
+      ·mvn deploy：部署（少用）
 
 ## 第七节 关于联网的问题
 
@@ -243,7 +246,9 @@
 ## 第九节 坐标
 
     9.1 数学中的坐标
+
     
+
         在平面上使用(x,y)两个向量可以唯一定位平面中的一个点；
         在空间上使用(x,y,z)三个向量可以唯一定位空间中的一个点。
 
@@ -343,6 +348,93 @@
         provided    有效            有效               不参与       ex. servlet-api
                                                   （运行时由其它组件
                                                    比如WebServer提供）
+
+    12.3 依赖按照依赖来源可以分两种：
+
+      ·直接依赖
+
+        - 直接写在自己工程的pom.xml中的依赖
+
+      ·间接依赖
+
+        - 由被依赖项目传递来的依赖
+
+    12.4 依赖的传递性
+
+      > 好处：
+          可以传递的依赖不必在每个模块工程中都重复声明，
+          在“最下面”的工程中依赖一次即可
+
+      > 注意：
+          非compile范围的依赖不可以传递，
+          故而test和provided范围的依赖每次使用都要个别声明
+
+    12.5 依赖的排除
+
+      > 需要设置依赖排除的场合
+
+        - 第三方提供
+        - 正在开发中的不稳定版
+
+      > 依赖排除的设置方式
+        <dependency> - 引入了不需要的依赖的工程本体
+          <exclusions>
+            <exclusion>
+              <groupId>commons-logging</groupId>
+              <artifactId>commons-logging</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+
+      > 依赖排除可以消除依赖性，排除过后，后面的工程也不会收到被中途排除的依赖了
+
+    12.6 依赖的原则
+
+      > 作用：
+          解决模块工程之间的jar包冲突
+
+        ·情景1
+            MakeFriends           ←--  ！冲突  --→ log4j_v1.2.14采用
+
+              - HelloFriend         |
+                - log4j_v1.2.14   -→|
+                - Hello             |
+                  - log4j_v1.2.17 -→|
+
+          >> Maven依赖采用原则1：就近优先
+
+        ·情景2
+            MakeFriends           ←--  ！冲突  --→ log4j_v1.2.14采用
+
+              - HelloFriend         |
+                - log4j_v1.2.14   -→|
+              - Hello               |
+                - log4j_v1.2.17   -→|
+
+          >> Maven依赖采用原则2：路径相同时，先声明者优先
+              ※先声明：dependency标签的出现顺序
+
+    12.7 统一管理依赖的版本
+
+        ·情景1
+            一批Spring的jar包的依赖版本都是4.0.0.RELEASE，
+            想要统一升级到4.1.1.RELEASE，怎么办？
+
+            >> 解决方案：
+              ·配合<properties>标签统一声明版本号
+              ·在需要统一版本的位置，使用${标签名}引用声明的版本号
+
+                <properties>
+                  <springVer>4.1.1.RELEASE</springVer>
+                </properties>
+
+                <dependency>
+                  <groupId>org.springframework</groupId>
+                  <artifactId>spring-core</artifactId>
+                  <version>${springVer}</version>
+                </dependency>
+
+            ※properties标签不局限于版本号，各种需要自定义的变量都可以使用，比如全局字符集等
 
 ## 第十三节 生命周期
 
@@ -458,6 +550,7 @@
         - packing处下拉选择jar则为Java Project
 
         - packing处下拉选择war则目标为JavaWeb Project
+
            ·対生成的工程右键properties
            ·Project Facets
            ·Dynamic Web Module取消勾选，Apply
@@ -467,5 +560,123 @@
            ·勾选Generate web.xml deployment descriptor
            ·OK => Apply
 
-    
+## 第十六节 继承
 
+    16.1 为什么需要继承
+
+      ·情景
+          各工程有以下test范围的依赖：
+
+            Hello => junit_v4.0
+            HelloFriend => junit_v4.0
+            MakeFriends => junit_v4.9
+        
+          现在想要统一管理各个模块工程中对junit依赖的版本，怎么办？
+
+      >> 方案：
+
+          将junit依赖版本统一提取到“父”工程中，在子工程中声明依赖时不指定版本
+          就会以父工程中的版本为准，同时也便于修改
+
+    16.2 步骤
+
+      ·创建一个Maven工程，打包方式为pom
+
+      ·在子工程中，声明对父工程的引用
+          <parent>
+            <groupId>pt.maven</groupId>
+            <artifactId>Parent</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <relativePath>../Parent</relativePath>
+          </parent>
+
+      ·将子工程的坐标与父工程坐标中重复的内容删除
+
+      ·在父工程中声明junit的依赖
+          <dependencyManagement>
+            <dependencies>
+              <dependency>
+                ...
+              </dependency>
+            </dependencies>
+          </dependencyManagement>
+
+      ·在子工程中删除junit依赖的版本信息
+        ※但是依然可以强制指定自己的依赖的版本号
+
+    16.3 注意
+
+        配置父工程之后要先安装父工程才可以构建子工程
+
+## 第十七节 聚合
+
+    17.1 作用
+
+        一次性安装多个模块工程
+
+    17.2 配置方式
+
+        在一个“总聚合工程”中，配置各个参与聚合的模块
+
+        <modules>
+          <!-- 指定各个子工程的相对路径 -->
+          <module>../Hello</module>
+          <module>../HelloFriend</module>
+        </modules>
+
+        ※可以是父工程，也可以另做聚合工程
+        ※Maven会自动调整子工程之间的依赖关系
+
+## 第十八节 自动部署
+
+    利用build标签配置当前构建过程中的特殊设置
+
+    <build>
+      <finalName>JojaMarket</finalName>
+
+      <!-- 构建过程中需要的插件 -->
+      <plugins>
+        <plugin>
+
+          <!-- cargo是一家专门从事“启动Servlet容器”的组织 -->
+          <groupId>org.codehaus.cargo</groupId>
+          <artifactId>cargo-maven2-plugin</artifactId>
+          <version>1.2.3</version>
+
+          <!-- 针对插件进行的配置 -->
+          <configuration>
+            <!-- 容器的位置 -->
+            <container>
+              <containerId>tomcat8x</containerId>
+              <home>C:\workspace\apache-tomcat-8.5.57</home>
+            </container>
+            <configuration>
+              <type>existing</type>
+              <home>C:\workspace\apache-tomcat-8.5.57</home>
+              <properties>
+                <cargo.servlet.port>8989</cargo.servlet.port>
+              </properties>
+            </configuration>
+          </configuration>
+
+          <!-- 配置插件在什么情况下执行 -->
+          <executions>
+            <execution>
+              <id>cargo-run</id>
+              <!-- 生命周期的阶段 -->
+              <phase>install</phase>
+              <!-- 插件的目标 -->
+              <goals>
+                <goal>run</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </build>
+
+    命令行里mvn install执行之后就可以自动部署到Server上了
+
+## 第十九节 Maven酷站
+
+    可以在<http://mvnrepository.com/>上查找各种依赖的坐标信息
